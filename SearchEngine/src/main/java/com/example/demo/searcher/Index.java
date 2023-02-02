@@ -1,12 +1,16 @@
 package com.example.demo.searcher;
 
 import com.example.demo.mapper.IndexMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.ansj.domain.Term;
 import org.ansj.splitWord.analysis.ToAnalysis;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,18 +18,18 @@ import java.util.Map;
 
 @Component
 public class Index {
-    public static final String INPUT_PATH="D:\\GitHub\\api";
+    public static final String INPUT_PATH="D:\\project\\doc_searcher_index\\";
 
     @Autowired
     private IndexMapper indexMapper;
 
-    public static Index index;
+//    public static Index index;
 
-    @PostConstruct
-    public void init() {
-        index=this;
-        index.indexMapper=this.indexMapper;
-    }
+//    @PostConstruct
+//    public void init() {
+//        index=this;
+//        index.indexMapper=this.indexMapper;
+//    }
 
     // 正排索引,下标对应docId
     private ArrayList<DocInfo> forwardIndex=new ArrayList<>();
@@ -144,11 +148,48 @@ public class Index {
         return docInfo;
     }
 
-    // 4.向数据库中保存索引
+    private ObjectMapper objectMapper=new ObjectMapper();
+    // 保存索引文件
     public void save() {
-        saveForwardIndex();
-        saveInvertedIndex();
+        long beg = System.currentTimeMillis();
+        System.out.println("保存索引开始!");
+        File indexPathFile = new File(INPUT_PATH);
+        if (!indexPathFile.exists()) {
+            indexPathFile.mkdirs();
+        }
+        File forwardIndexFile = new File(INPUT_PATH + "forward.dat");
+        File invertedIndexFile = new File(INPUT_PATH + "inverted.dat");
+        try {
+            objectMapper.writeValue(forwardIndexFile, forwardIndex);
+            objectMapper.writeValue(invertedIndexFile, invertedIndex);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        long end = System.currentTimeMillis();
+        System.out.println("保存索引结束! 消耗时间: " + (end - beg));
     }
+
+    // 加载索引文件
+    public void load() {
+        long beg = System.currentTimeMillis();
+        System.out.println("加载索引开始!");
+        File forwardIndexFile = new File(INPUT_PATH+ "forward.dat");
+        File invertedIndexFile = new File(INPUT_PATH + "inverted.dat");
+        try {
+            forwardIndex = objectMapper.readValue(forwardIndexFile, new TypeReference<ArrayList<DocInfo>>() {});
+            invertedIndex = objectMapper.readValue(invertedIndexFile, new TypeReference<HashMap<String, ArrayList<Weight>>>() {});
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        long end = System.currentTimeMillis();
+        System.out.println("加载索引结束! 消耗时间: " + (end - beg));
+    }
+
+    // 4.向数据库中保存索引
+//    public void save() {
+//        saveForwardIndex();
+//        saveInvertedIndex();
+//    }
 
     // 通过动态SQL，将倒排索引数据保存进数据库中
     private void saveInvertedIndex() {
@@ -167,27 +208,27 @@ public class Index {
                 invertedList.add(invertedInfo);
             }
         }
-        index.indexMapper.saveInvertedIndex(invertedList);
+        //index.indexMapper.saveInvertedIndex(invertedList);
     }
 
     // 通过动态SQL，将正排索引数据保存进数据库中
     private void saveForwardIndex() {
-        index.indexMapper.saveForwardIndex(forwardIndex);
+        //index.indexMapper.saveForwardIndex(forwardIndex);
     }
 
     //5.将数据库中的索引保存到内存中
-    public void load() {
-        loadForwardIndex();
-        loadInvertedIndex();
-    }
+//    public void load() {
+//        loadForwardIndex();
+//        loadInvertedIndex();
+//    }
 
     private void loadForwardIndex() {
-        forwardIndex=index.indexMapper.loadForwardIndex();
+        //forwardIndex=index.indexMapper.loadForwardIndex();
     }
 
-    private void loadInvertedIndex() {
+    /*private void loadInvertedIndex() {
         ArrayList<InvertedInfo> invertedList=
-                index.indexMapper.loadInvertedIndex();
+                //index.indexMapper.loadInvertedIndex();
         for (InvertedInfo info:invertedList) {
             List<Weight> inverted=invertedIndex.get(info.getWord());
             if(inverted==null) {
@@ -208,4 +249,5 @@ public class Index {
             }
         }
     }
+     */
 }

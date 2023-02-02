@@ -162,13 +162,15 @@
     button.onclick = function() {
         // 先获取到输入框的内容
         let input = document.querySelector(".header input");
-        let query = input.value;
-        console.log("query: " + query);
+        let query=input.value;
         // 然后构造一个 ajax 请求发给服务器
-        $.ajax({
-            type: "GET",
-            url: "searcher?query=" + query,
-            success: function(data, status) {
+        jQuery.ajax({
+            type: "POST",
+            url: "searcher",
+            data:{
+                query:query
+            },
+            success: function(data) {
                 // success 这个函数会在请求成功后调用.
                 // data 参数就表示拿到的结果数据
                 // status 参数就表示 HTTP 状态码

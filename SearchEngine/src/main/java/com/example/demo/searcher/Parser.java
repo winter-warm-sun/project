@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @Component
 public class Parser {
     // 先指定一个加载文档的路径
-    private static final String INPUT_PATH="D:\\GitHub\\api";
+    private static final String INPUT_PATH="D:\\project\\doc_searcher_index\\docs\\api";
     // 创建一个index实例
     private Index index=new Index();
 
@@ -185,17 +185,19 @@ public class Parser {
      * @param fileList  表示递归得到的结果
      */
     private void enumFile(String inputPath, ArrayList<File> fileList) {
-        File rootPath=new File(inputPath);
-        // 使用listFiles只能看到一级目录，所以需要递归获取所有目录中的内容
-        File[] files=rootPath.listFiles();
-        for(File f:files) {
-            // 根据当前f的类型，来决定是否要递归
-            // 如果f是一个普通文件，就把f加入到fileList结果中
-            // 如果f是一个目录，就递归的调用enumFile方法，来进一步获取子目录中的内容
-            if(f.isDirectory()) {
-                enumFile(f.getAbsolutePath(),fileList);
-            }else {
-                if(f.getAbsolutePath().endsWith(".html")) {
+        File rootPath = new File(inputPath);
+        // listFiles 能够获取到 rootPath 当前目录下所包含的文件/目录
+        // 使用 listFiles 只能看到一级目录, 看不到子目录里的内容.
+        // 要想看到子目录中的内容, 还需要进行递归.
+        File[] files = rootPath.listFiles();
+        for (File f : files) {
+            // 根据当前 f 的类型, 来决定是否要递归.
+            // 如果 f 是一个普通文件, 就把 f 加入到 fileList 结果中
+            // 如果 f 是一个目录, 就递归的调用 enumFile 这个方法, 来进一步的获取子目录中的内容.
+            if (f.isDirectory()) {
+                enumFile(f.getAbsolutePath(), fileList);
+            } else {
+                if (f.getAbsolutePath().endsWith(".html")) {
                     fileList.add(f);
                 }
             }

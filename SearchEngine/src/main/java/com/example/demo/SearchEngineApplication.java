@@ -11,7 +11,6 @@ public class SearchEngineApplication {
 
     public static void main(String[] args) throws InterruptedException {
         SpringApplication.run(SearchEngineApplication.class, args);
-        DocSearcher docSearcher=new DocSearcher();
     }
 
 }
