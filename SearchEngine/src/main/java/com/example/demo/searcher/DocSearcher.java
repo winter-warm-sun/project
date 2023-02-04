@@ -1,19 +1,21 @@
 package com.example.demo.searcher;
 
+import com.example.demo.util.ThreadPool;
 import org.ansj.domain.Term;
 import org.ansj.splitWord.analysis.ToAnalysis;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class DocSearcher {
     private static final String STOP_WORD_PATH="D:/project/doc_searcher_index/stop_word.txt";
     private HashSet<String> stopWord=new HashSet<>();
 
     private Index index=new Index();
+
+    // 用于处理最后结果的线程
+    private static ExecutorService service= ThreadPool.executorService();
 
     // 在构造该类时，完成索引的加载
     public DocSearcher() {
@@ -52,20 +54,24 @@ public class DocSearcher {
         }
 
         // 2. [触发] 针对分词结果来查倒排
-        ArrayList<ArrayList<Weight>> termResult = new ArrayList<>();
+        ArrayList<DocWeight> termResult = new ArrayList<>();
         for (Term term : terms) {
             String word = term.getName();
             // 虽然倒排索引中, 有很多的词. 但是这里的词一定都是之前的文档中存在的.
-            ArrayList<Weight> invertedList = index.getInverted(word);
+            ArrayList<DocWeight> docWeights = index.getDocWeights(word);
 
-            termResult.add(invertedList);
+            termResult.addAll(docWeights);
         }
+
+
         // 3. [合并] 针对多个分词结果触发出的相同文档, 进行权重合并
-        List<Weight> allTermResult = mergeResult(termResult);
+        List<DocWeight> allTermResult = mergeResult(termResult);
+
+
         // 4. [排序] 针对触发的结果按照权重降序排序
-        allTermResult.sort(new Comparator<Weight>() {
+        allTermResult.sort(new Comparator<DocWeight>() {
             @Override
-            public int compare(Weight o1, Weight o2) {
+            public int compare(DocWeight o1, DocWeight o2) {
                 // 如果是升序排序: return o1.getWeight() - o2.getWeight();
                 // 如果是降序排序: return o2.getWeight() - o1.getWeight();
                 return o2.getWeight() - o1.getWeight();
@@ -75,77 +81,33 @@ public class DocSearcher {
         // 5. [包装结果] 针对排序的结果, 去查正排, 构造出要返回的数据.
         List<Result> results = new ArrayList<>();
 
-        for (Weight weight:allTermResult) {
-            DocInfo docInfo = index.getDocInfo(weight.getDocId());
+        for (DocWeight docWeight:allTermResult) {
             Result result = new Result();
-            result.setTitle(docInfo.getTitle());
-            result.setUrl(docInfo.getUrl());
-            result.setDesc(GenDesc(docInfo.getContent(), terms));
+            result.setTitle(docWeight.getTitle());
+            result.setUrl(docWeight.getUrl());
+            result.setDesc(GenDesc(docWeight.getContent(), terms));
             results.add(result);
         }
 
         return results;
     }
 
-    private ArrayList<Weight> mergeResult(ArrayList<ArrayList<Weight>> tokenResults) {
-        // 1.先把每行的结果按照id升序排序
-        for (ArrayList<Weight> row:tokenResults) {
-            row.sort(new Comparator<Weight>() {
-                @Override
-                public int compare(Weight o1, Weight o2) {
-                    return o1.getDocId()-o2.getDocId();
-                }
-            });
-        }
-        // 2.借助优先级队列，进行归并
-        ArrayList<Weight> target=new ArrayList<>();
-        //      2.1创建优先级队列，指定比较规则
-        PriorityQueue<Pos> queue=new PriorityQueue<>(new Comparator<Pos>() {
-            @Override
-            public int compare(Pos o1, Pos o2) {
-                Weight w1=tokenResults.get(o1.row).get(o1.col);
-                Weight w2=tokenResults.get(o2.row).get(o2.col);
-                return w1.getDocId()- w2.getDocId();
-            }
-        });
-        //      2.2 初始化队列，放入每行的第一列元素
-        for (int row=0;row<tokenResults.size();row++) {
-            queue.offer(new Pos(row,0));
-        }
-        //      2.3 循环从队列中取元素
-        while (!queue.isEmpty()) {
-            Pos curPos=queue.poll();
-            Weight curWeight=tokenResults.get(curPos.row).get(curPos.col);
-            if(target.size()!=0) {
-                Weight lastWeight=target.get(target.size()-1);
-                if(curWeight.getDocId()==lastWeight.getDocId()) {
-                    // 合并weight的权重
-                    lastWeight.setWeight(lastWeight.getWeight()+ curWeight.getWeight());
-                } else {
-                    // 不合并，直接插入
-                    target.add(curWeight);
-                }
+    // 利用map实现权重合并
+    private ArrayList<DocWeight> mergeResult(ArrayList<DocWeight> tokenResults) {
+        HashMap<Integer,DocWeight> map=new HashMap<>();
+        for (DocWeight docWeight:tokenResults) {
+            int docid=docWeight.getDocid();
+            if(map.get(docid)==null) {
+                map.put(docid,docWeight);
             }else {
-                target.add(curWeight);
+                int weight1=map.get(docid).getWeight();
+                int weight2=docWeight.getWeight();
+                docWeight.setWeight(weight1+weight2);
             }
-            Pos newPos=new Pos(curPos.row,curPos.col+1);
-            if(newPos.col>=tokenResults.get(newPos.row).size()) {
-                // 当前行已经到达末尾了
-                continue;
-            }
-            queue.offer(newPos);
         }
-        return target;
-    }
-
-    static class Pos {
-        public int row;
-        public int col;
-
-        public Pos(int row,int col) {
-            this.row=row;
-            this.col=col;
-        }
+        Collection<DocWeight> values=map.values();
+        ArrayList<DocWeight> result=new ArrayList<>(values);
+        return result;
     }
 
     // 正文摘要实现

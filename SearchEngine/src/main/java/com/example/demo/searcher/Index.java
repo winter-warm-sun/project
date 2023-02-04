@@ -46,17 +46,12 @@ public class Index {
     private Object locker1=new Object();
     private Object locker2=new Object();
 
-    // 1.根据docId查正排
-    public DocInfo getDocInfo(int docid) {
-        return index.indexMapper.searchForwardIndex(docid);
+    // 1.根据word联合查找两张表的信息
+    public ArrayList<DocWeight> getDocWeights(String word) {
+        return index.indexMapper.getDocWeights(word);
     }
 
-    // 2.根据分词结果查倒排
-    public ArrayList<Weight> getInverted(String term) {
-        return index.indexMapper.searchInvertedIndex(term);
-    }
-
-    // 3.向索引中新增一条文档
+    // 2.向索引中新增一条文档
     public void addDoc(String title,String url,String content) {
         // 新增文档操作，需要同时给正排索引和倒排索引新增信息
         // 构建正排索引
@@ -140,6 +135,7 @@ public class Index {
         }
     }
 
+
     private DocInfo buildForward(String title, String url, String content) {
         DocInfo docInfo=new DocInfo();
         docInfo.setTitle(title);
@@ -152,14 +148,10 @@ public class Index {
         return docInfo;
     }
 
-    // 4.向数据库中保存索引
+    // 3.向数据库中保存索引
     public void save() {
-        long beg = System.currentTimeMillis();
-        log.info("保存索引开始!");
         saveForwardIndex();
         saveInvertedIndex();
-        long end = System.currentTimeMillis();
-        log.info("保存索引结束! 消耗时间: " + (end - beg));
     }
 
     // 通过动态SQL，将倒排索引数据保存进数据库中
@@ -255,4 +247,5 @@ public class Index {
             e.printStackTrace();
         }
     }
+
 }

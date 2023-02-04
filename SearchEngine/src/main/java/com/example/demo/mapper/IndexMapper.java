@@ -1,9 +1,6 @@
 package com.example.demo.mapper;
 
-import com.example.demo.searcher.DocInfo;
-import com.example.demo.searcher.InvertedInfo;
-import com.example.demo.searcher.Result;
-import com.example.demo.searcher.Weight;
+import com.example.demo.searcher.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -21,7 +18,5 @@ public interface IndexMapper {
     void saveInvertedIndex(@Param("list")List<InvertedInfo> invertedInfos);
 
 
-    ArrayList<Weight> searchInvertedIndex(@Param("word") String word);
-
-    DocInfo searchForwardIndex(@Param("docid") int docid);
+    ArrayList<DocWeight> getDocWeights(@Param("word") String word);
 }

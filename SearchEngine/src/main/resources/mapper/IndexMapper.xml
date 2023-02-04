@@ -17,11 +17,8 @@
         </foreach>
     </insert>
 
-    <select id="searchInvertedIndex" resultType="com.example.demo.searcher.Weight">
-        select * from inverted_index where word=#{word}
-    </select>
-
-    <select id="searchForwardIndex" resultType="com.example.demo.searcher.DocInfo">
-        select * from forward_index where docid =#{docid}
+    <select id="getDocWeights" resultType="com.example.demo.searcher.DocWeight">
+        select ii.docid,weight,title,url,content from inverted_index ii join forward_index fi
+        on ii.docid=fi.docid where word=#{word} ;
     </select>
 </mapper>
