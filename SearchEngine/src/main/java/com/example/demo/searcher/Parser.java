@@ -1,7 +1,6 @@
 package com.example.demo.searcher;
 
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Controller;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -12,7 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @Component
 public class Parser {
     // 先指定一个加载文档的路径
-    private static final String INPUT_PATH="D:\\project\\doc_searcher_index\\docs\\api";
+    private static final String INPUT_PATH="D:/project/doc_searcher_index/docs/api";
     // 创建一个index实例
     private Index index=new Index();
 
@@ -94,52 +93,6 @@ public class Parser {
         t2.addAndGet(end-mid);
     }
 
-    private String parseContent(File f) {
-        // 按照一个字符一个字符的方式来读取，以<和>来控制拷贝数据的开关
-        try (BufferedReader bufferedReader=new BufferedReader(new FileReader(f),1024*1024)){
-            // 是否要进行拷贝的开关
-            boolean isCopy=true;
-            // 用于保存结果的StringBuilder
-            StringBuilder content=new StringBuilder();
-            while (true) {
-                /*
-                此处的read，返回值为int,而不是char
-                如果读到文件末尾，继续读就会返回-1
-                 */
-                int ret=bufferedReader.read();
-                if(ret==-1) {
-                    // 表示文件读完了
-                    break;
-                }
-                // 如果结果不是-1，那么就是一个合法的字符
-                char c=(char) ret;
-                if(isCopy) {
-                    // 开关打开的状态，遇到普通字符就应该拷贝到StringBuilder中
-                    if(c=='<') {
-                        // 关闭开关
-                        isCopy=false;
-                        continue;
-                    }
-                    if(c=='\n'||c=='\r') {
-                        // 为了去掉换行，把换行替换成空格
-                        c=' ';
-                    }
-                    // 其他字符，直接进行拷贝即可，把结果给拷贝到最终的StringBuilder中
-                    content.append(c);
-                } else {
-                    // 开关关闭的状态，就暂时不拷贝，直到遇到>
-                    if(c=='>') {
-                        isCopy=true;
-                    }
-                }
-            }
-            return content.toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return "";
-    }
-
     private String readFile(File f) {
         StringBuilder content=new StringBuilder();
         try (BufferedReader bufferedReader=new BufferedReader(new FileReader(f))){
@@ -169,9 +122,11 @@ public class Parser {
     }
 
     private String parseUrl(File f) {
-        String part1="https://docs.oracle.com/javase/8/docs/api/";
+        String part1="https://docs.oracle.com/javase/8/docs/api";
         String part2=f.getAbsolutePath().substring(INPUT_PATH.length());
-        return part1+part2;
+        String url=part1+part2;
+        url=url.replace("\\","/");
+        return url;
     }
 
     private String parseTitle(File f) {

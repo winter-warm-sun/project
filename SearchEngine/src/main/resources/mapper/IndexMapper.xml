@@ -16,10 +16,12 @@
             (#{inverted.id},#{inverted.word},#{inverted.docid},#{inverted.weight})
         </foreach>
     </insert>
-    <select id="loadForwardIndex" resultType="com.example.demo.searcher.DocInfo">
-        select * from forward_index
+
+    <select id="searchInvertedIndex" resultType="com.example.demo.searcher.Weight">
+        select * from inverted_index where word=#{word}
     </select>
-    <select id="loadInvertedIndex" resultType="com.example.demo.searcher.InvertedInfo">
-        select * from inverted_index
+
+    <select id="searchForwardIndex" resultType="com.example.demo.searcher.DocInfo">
+        select * from forward_index where docid =#{docid}
     </select>
 </mapper>

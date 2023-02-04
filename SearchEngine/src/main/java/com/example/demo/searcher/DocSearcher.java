@@ -5,16 +5,18 @@ import org.ansj.splitWord.analysis.ToAnalysis;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class DocSearcher {
-    private static final String STOP_WORD_PATH="D:\\project\\doc_searcher_index\\stop_word.txt";
+    private static final String STOP_WORD_PATH="D:/project/doc_searcher_index/stop_word.txt";
     private HashSet<String> stopWord=new HashSet<>();
 
     private Index index=new Index();
 
     // 在构造该类时，完成索引的加载
     public DocSearcher() {
-        index.load();
         loadStopWord();
     }
 
@@ -55,10 +57,7 @@ public class DocSearcher {
             String word = term.getName();
             // 虽然倒排索引中, 有很多的词. 但是这里的词一定都是之前的文档中存在的.
             ArrayList<Weight> invertedList = index.getInverted(word);
-            if (invertedList == null) {
-                // 说明这个词在所有文档中都不存在.
-                continue;
-            }
+
             termResult.add(invertedList);
         }
         // 3. [合并] 针对多个分词结果触发出的相同文档, 进行权重合并
@@ -72,9 +71,11 @@ public class DocSearcher {
                 return o2.getWeight() - o1.getWeight();
             }
         });
+
         // 5. [包装结果] 针对排序的结果, 去查正排, 构造出要返回的数据.
         List<Result> results = new ArrayList<>();
-        for (Weight weight : allTermResult) {
+
+        for (Weight weight:allTermResult) {
             DocInfo docInfo = index.getDocInfo(weight.getDocId());
             Result result = new Result();
             result.setTitle(docInfo.getTitle());
@@ -82,18 +83,10 @@ public class DocSearcher {
             result.setDesc(GenDesc(docInfo.getContent(), terms));
             results.add(result);
         }
+
         return results;
     }
 
-    static class Pos {
-        public int row;
-        public int col;
-
-        public Pos(int row,int col) {
-            this.row=row;
-            this.col=col;
-        }
-    }
     private ArrayList<Weight> mergeResult(ArrayList<ArrayList<Weight>> tokenResults) {
         // 1.先把每行的结果按照id升序排序
         for (ArrayList<Weight> row:tokenResults) {
@@ -143,6 +136,16 @@ public class DocSearcher {
             queue.offer(newPos);
         }
         return target;
+    }
+
+    static class Pos {
+        public int row;
+        public int col;
+
+        public Pos(int row,int col) {
+            this.row=row;
+            this.col=col;
+        }
     }
 
     // 正文摘要实现
