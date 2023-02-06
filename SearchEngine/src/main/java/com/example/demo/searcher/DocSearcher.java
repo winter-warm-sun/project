@@ -14,8 +14,6 @@ public class DocSearcher {
 
     private Index index=new Index();
 
-    // 用于处理最后结果的线程
-    private static ExecutorService service= ThreadPool.executorService();
 
     // 在构造该类时，完成索引的加载
     public DocSearcher() {
