@@ -7,7 +7,6 @@ import org.ansj.splitWord.analysis.ToAnalysis;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,9 +14,16 @@ import java.util.Map;
 
 // 通过这个类在内存中来构造出索引结构
 public class Index {
-    private static String INDEX_PATH = "D:/project/doc_searcher_index/";
 
+    private static String INDEX_PATH=null;
 
+    static {
+        if(Config.isOnline) {
+            INDEX_PATH="/root/searcher_index/";
+        }else {
+            INDEX_PATH="D:/project/doc_searcher_index/";
+        }
+    }
     private ObjectMapper objectMapper = new ObjectMapper();
 
     // 正排索引,下标对应docId
@@ -25,7 +31,6 @@ public class Index {
 
     // 倒排索引，key是分词结果，value是这个分词term对应的倒排拉链（包含一堆docId）
     private HashMap<String,ArrayList<Weight>> invertedIndex=new HashMap<>();
-
 
     // 新创建两个锁对象
     private Object locker1 = new Object();
