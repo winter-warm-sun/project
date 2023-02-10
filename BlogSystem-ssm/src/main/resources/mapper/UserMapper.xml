@@ -11,4 +11,7 @@
         select * from userinfo where
         username=#{username}
     </select>
+    <select id="getAuthorInfo" resultType="com.example.demo.model.UserInfo">
+        select * from userinfo where id=(select uid from articleinfo where id=#{aid})
+    </select>
 </mapper>

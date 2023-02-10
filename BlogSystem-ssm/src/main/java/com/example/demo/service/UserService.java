@@ -18,4 +18,8 @@ public class UserService {
     public UserInfo login(String username) {
         return userMapper.login(username);
     }
+
+    public UserInfo getAuthorInfo(Integer aid) {
+        return userMapper.getAuthorInfo(aid);
+    }
 }

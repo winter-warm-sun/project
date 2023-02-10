@@ -7,38 +7,37 @@ use mycnblog;
 
 -- 创建表[用户表]
 drop table if exists  userinfo;
-CREATE TABLE userinfo(
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    username VARCHAR(100) NOT NULL,
-    password VARCHAR(64) NOT NULL,
-    photo VARCHAR(500) DEFAULT '',
-    createtime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updatetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    `state` INT DEFAULT 1
-) DEFAULT CHARSET 'utf8mb4';
-
+create table userinfo(
+                         id int primary key auto_increment,
+                         username varchar(100) unique not null,
+                         password varchar(64) not null,
+                         photo varchar(500) default '',
+                         createtime datetime default now(),
+                         updatetime datetime default now(),
+                         `state` int default 1
+) default charset 'utf8mb4';
 
 -- 创建文章表
 drop table if exists  articleinfo;
-
-CREATE TABLE articleinfo(
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    title VARCHAR(100) NOT NULL,
-    content TEXT NOT NULL,
-    createtime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updatetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    uid INT NOT NULL,
-    rcount INT NOT NULL DEFAULT 1,
-    `state` INT DEFAULT 1
-) DEFAULT CHARSET 'utf8mb4';
-
+create table articleinfo(
+                            id int primary key auto_increment,
+                            title varchar(100) not null,
+                            content text not null,
+                            createtime datetime default now(),
+                            updatetime datetime default now(),
+                            uid int not null,
+                            rcount int not null default 1,
+                            `state` int default 1
+)default charset 'utf8mb4';
 
 -- 添加一个用户信息
-INSERT INTO `mycnblog` ,`userinfo` (`id`, `username`, `password`, `photo`, `createtime`, `updatetime`, `state`) VALUES
+INSERT INTO `mycnblog`.`userinfo` (`id`, `username`, `password`, `photo`, `createtime`, `updatetime`, `state`) VALUES
     (1, 'admin', 'admin', '', '2021-12-06 17:10:48', '2021-12-06 17:10:48', 1);
 
+delete from userinfo where username='admin';
 -- 文章添加测试数据
 insert into articleinfo(title,content,uid)
 values('Java','Java正文',1);
+
 
 

@@ -64,10 +64,10 @@
         </div>
     </div>
     <script type="text/javascript">
+        var aid=getURLParam("blogId");
         // 获取博客详情
         function getBlogDetail() {
             //从url中获取文章id
-            var aid=getURLParam("blogId");
             if(aid!=null&&aid>0) {
                 //访问后端查询文章详情
                 jQuery.ajax({
@@ -94,9 +94,9 @@
         // 获取个人信息
         function myInfo() {
             jQuery.ajax({
-                url:"/user/myinfo",
+                url:"/user/authorinfo",
                 type:"POST",
-                data:{},
+                data:{"aid":aid},
                 success:function(result) {
                     if(result.code==200&&result.data!=null) {
                         jQuery("#username").text(result.data.username);

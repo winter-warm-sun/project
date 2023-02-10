@@ -56,6 +56,10 @@ public class UserController {
         return SessionUtil.getLoginUser(request);
     }
 
+    @RequestMapping("/authorinfo")
+    public UserInfo authorInfo(Integer aid) {
+        return userService.getAuthorInfo(aid);
+    }
     /**
      * 退出登录
      * @param request
