@@ -52,7 +52,7 @@
     <!-- 导航栏 -->
     <div class="nav">
         <img src="img/logo.jpg" alt="">
-        <span class="title">我的博客系统</span>
+        <span class="title">学海记录</span>
         <!-- 用来占据中间位置 -->
         <span class="spacer"></span>
         <a href="blog_list.html">公共主页</a>
@@ -130,7 +130,7 @@
                             finalHtml+='<div class="blog">';
                             finalHtml+='<div class="title">'+item.title+'</div>';
                             finalHtml+='<div class="date">'+item.createtime+'</div>';
-                            finalHtml+='<div class="desc">'+item.content+'</div>';
+                            finalHtml+='<div class="desc">'+mySubStr(item.content)+'</div>';
                             finalHtml+='<a href="blog_content.html?blogId='+item.id+'" class="detail">查看全文 &gt;&gt;</a>';
                             finalHtml+='</div>';
                         }

@@ -102,7 +102,7 @@ public class ArticleController {
             // 参数有效
             int totalCount=articleService.getTotalCount();
             // 总页数
-            int totalPage=totalCount/psize+1;
+            int totalPage = (int) Math.ceil(totalCount * 1.0 / psize);
             return totalPage;
         }
         return null;

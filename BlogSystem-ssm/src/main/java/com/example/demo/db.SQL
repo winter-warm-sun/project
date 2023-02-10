@@ -7,28 +7,31 @@ use mycnblog;
 
 -- 创建表[用户表]
 drop table if exists  userinfo;
-create table userinfo(
-                         id int primary key auto_increment,
-                         username varchar(100) not null,
-                         password varchar(32) not null,
-                         photo varchar(500) default '',
-                         createtime datetime default now(),
-                         updatetime datetime default now(),
-                         `state` int default 1
-) default charset 'utf8mb4';
+CREATE TABLE userinfo(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(100) NOT NULL,
+    password VARCHAR(64) NOT NULL,
+    photo VARCHAR(500) DEFAULT '',
+    createtime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `state` INT DEFAULT 1
+) DEFAULT CHARSET 'utf8mb4';
+
 
 -- 创建文章表
 drop table if exists  articleinfo;
-create table articleinfo(
-                            id int primary key auto_increment,
-                            title varchar(100) not null,
-                            content text not null,
-                            createtime datetime default now(),
-                            updatetime datetime default now(),
-                            uid int not null,
-                            rcount int not null default 1,
-                            `state` int default 1
-)default charset 'utf8mb4';
+
+CREATE TABLE articleinfo(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(100) NOT NULL,
+    content TEXT NOT NULL,
+    createtime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    uid INT NOT NULL,
+    rcount INT NOT NULL DEFAULT 1,
+    `state` INT DEFAULT 1
+) DEFAULT CHARSET 'utf8mb4';
+
 
 -- 添加一个用户信息
 INSERT INTO `mycnblog` ,`userinfo` (`id`, `username`, `password`, `photo`, `createtime`, `updatetime`, `state`) VALUES

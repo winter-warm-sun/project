@@ -39,11 +39,11 @@
     width: 120px;
     height: 40px;
     line-height: 40px;
-    color: black;
+    color: green;
     text-align: center;
     text-decoration: none;
     margin: 10px auto 0 auto;
-    border: 2px solid black;
+
 
     /* 给颜色加上过渡效果 */
     transition: all 0.3s;
@@ -52,6 +52,6 @@
 
 /* 查看详情按钮的鼠标 hover 效果 */
 .blog a:hover {
-    background-color: #000;
+    background-color: gray;
     color: #fff;
 }
