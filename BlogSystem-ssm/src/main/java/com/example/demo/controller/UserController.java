@@ -60,10 +60,11 @@ public class UserController {
     public UserInfo authorInfo(Integer aid) {
         return userService.getAuthorInfo(aid);
     }
+
     /**
      * 退出登录
      * @param request
-     * @return
+     * @return 返回值
      */
     @RequestMapping("/logout")
     public boolean logout(HttpServletRequest request) {
