@@ -41,7 +41,7 @@ public class Utils {
      */
     public static void getScreenShot(String str) throws IOException {
         List<String> list=getTime();
-        String fileName="./src/test/java/"+list.get(0)+"/"+str+"_"+list.get(1)+".png";
+        String fileName="./src/test/java/screenshot/"+list.get(0)+"/"+str+"_"+list.get(1)+".png";
         File srcFile=driver.getScreenshotAs(OutputType.FILE);
         // 把屏幕截图生成的文件放到指定的路径
         FileUtils.copyFile(srcFile,new File(fileName));
