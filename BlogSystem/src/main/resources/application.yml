@@ -1,0 +1,17 @@
+# 当前运行的环境(配置文件)
+spring:
+  profiles:
+    active: dev
+# 设置 Mybatis 的 xml 保存路径
+mybatis:
+  mapper-locations: classpath:mapper/*Mapper.xml
+  configuration: # 配置打印 MyBatis 执行的 SQL
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+# 配置打印 MyBatis 执行的 SQL
+logging:
+  level:
+    com:
+      example:
+        demo: debug
+server:
+  port: 8081
