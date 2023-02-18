@@ -12,8 +12,6 @@ create table userinfo(
                          username varchar(100) unique not null,
                          password varchar(64) not null,
                          photo varchar(500) default '',
-                         createtime datetime default now(),
-                         updatetime datetime default now(),
                          `state` int default 1
 ) default charset 'utf8mb4';
 
@@ -23,21 +21,9 @@ create table articleinfo(
                             id int primary key auto_increment,
                             title varchar(100) not null,
                             content text not null,
-                            createtime datetime default now(),
-                            updatetime datetime default now(),
+                            createtime datetime,
                             uid int not null,
                             rcount int not null default 1,
                             `state` int default 1
 )default charset 'utf8mb4';
-
--- 添加一个用户信息
-INSERT INTO `mycnblog`.`userinfo` (`id`, `username`, `password`, `photo`, `createtime`, `updatetime`, `state`) VALUES
-    (1, 'admin', 'admin', '', '2021-12-06 17:10:48', '2021-12-06 17:10:48', 1);
-
-delete from userinfo where username='admin';
--- 文章添加测试数据
-insert into articleinfo(title,content,uid)
-values('Java','Java正文',1);
-
-
 

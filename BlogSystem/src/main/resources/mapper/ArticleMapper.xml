@@ -3,11 +3,11 @@
 <!-- namespace 要设置是实现接口的具体包名加接口名 -->
 <mapper namespace="com.example.demo.mapper.ArticleMapper">
     <insert id="add">
-        insert into articleinfo(title,content,uid)
-        values (#{title},#{content},#{uid})
+        insert into articleinfo(title,content,createtime,uid)
+        values (#{title},#{content},now(),#{uid})
     </insert>
     <update id="update">
-        update articleinfo set title=#{title},content=#{content},updatetime=now()
+        update articleinfo set title=#{title},content=#{content},createtime=now()
         where id=#{aid} and uid=#{uid}
     </update>
     <delete id="delete">
