@@ -3,6 +3,7 @@ package common;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,9 +17,12 @@ public class Utils {
 
     // 创建驱动对象
     public static ChromeDriver createDriver() {
+        // 设置无头模式
+        ChromeOptions options=new ChromeOptions();
+        options.addArguments("-headless");
         // 驱动对象已经创建好了/没有创建
         if(driver==null) {
-            driver=new ChromeDriver();
+            driver=new ChromeDriver(options);
             // 创建隐式等待(防止因页面加载过慢而导致错误)
             driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         }
