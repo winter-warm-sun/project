@@ -76,5 +76,4 @@ public class BlogLoginTest {
         alert.accept();
         Utils.getScreenShot(getClass().getName());
     }
-
 }
