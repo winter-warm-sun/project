@@ -28,12 +28,21 @@
             <div class="desc">我是一段描述. Lorem, ipsum dolor sit amet consectetur adipisicing elit. Quibusdam qui dolor quo tempora dignissimos itaque facilis, accusantium porro sapiente beatae harum soluta ex quos quia eius vero repudiandae voluptatem veniam.</div>
             <div class="url">http://www.baidu.com</div>
         </div>   -->
+
+<!--        <div id="load" style="width:66px;height:66px;position:absolute;top:50%;left:50%;">-->
+<!--            <img alt="加载中..." src="/image/loading.gif">-->
+<!--        </div> -->
     </div>
 </div>
 
 <script src="js/jquery.js"></script>
 
 <script>
+    jQuery(".header").keydown(function () {
+        if(event.keyCode=="13") {
+            jQuery("#search-btn").click();
+        }
+    });
     // 放置用户自己写的 js 代码
      function submit() {
          // 先进性非空效验
@@ -50,6 +59,14 @@
             url: "search",
             data:{
                 query:input.val()
+            },
+            beforeSend:function() {
+                jQuery(".result").append('<div id="load" style="width:66px;height:66px;position:absolute;top:38%;left:45%;">\n' +
+                    '            <img alt="加载中..." src="/image/loading.gif">\n' +
+                    '        </div> ')
+            },
+            complete:function() {
+                jQuery("#load").remove();
             },
             success: function(data) {
                 buildResult(data);

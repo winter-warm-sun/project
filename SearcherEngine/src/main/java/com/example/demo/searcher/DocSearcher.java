@@ -1,5 +1,6 @@
 package com.example.demo.searcher;
 
+import lombok.extern.slf4j.Slf4j;
 import org.ansj.domain.Term;
 import org.ansj.splitWord.analysis.ToAnalysis;
 
@@ -8,10 +9,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
+
+
+@Slf4j
 // 通过这个类, 来完成整个的搜索过程
 public class DocSearcher {
     // 停用词文件的路径
     private static String STOP_WORD_PATH =null;
+
 
     static {
         if(Config.isOnline) {
@@ -19,6 +24,7 @@ public class DocSearcher {
         }else {
             STOP_WORD_PATH="D:\\代码仓库\\project\\doc_searcher_index\\stop_word.txt";
         }
+//        ToAnalysis.parse("hello").getTerms();
     }
     // 使用这个 HashSet 来保存停用词
     private HashSet<String> stopWords = new HashSet<>();
@@ -30,6 +36,8 @@ public class DocSearcher {
     // 加载暂停词表
     private void loadStopWords() {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(STOP_WORD_PATH))) {
+            long beg = System.currentTimeMillis();
+            System.out.println("加载停词开始!");
             while (true) {
                 String line = bufferedReader.readLine();
                 if (line == null) {
@@ -38,6 +46,8 @@ public class DocSearcher {
                 }
                 stopWords.add(line);
             }
+            long end = System.currentTimeMillis();
+            System.out.println("加载停词结束! 消耗时间: " + (end - beg) + " ms");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -52,9 +62,11 @@ public class DocSearcher {
     // 结果集合中包含若干条记录，每个记录中包含搜索结果的标题、描述、URL（再根据查找到的结果进行正排搜索）
 
     public List<Result> search(String query) {
+        long part1=System.currentTimeMillis();
         // 1. [分词] 针对 query 这个查询词进行分词
         List<Term> oldTerms = ToAnalysis.parse(query).getTerms();
         List<Term> terms = new ArrayList<>();
+
         // 针对分词结果, 使用暂停词表进行过滤
         for (Term term : oldTerms) {
             if (stopWords.contains(term.getName())) {
@@ -62,6 +74,9 @@ public class DocSearcher {
             }
             terms.add(term);
         }
+        long part2=System.currentTimeMillis();
+        log.info("分词操作耗时："+(part2-part1));
+
 
         // 2. [触发] 针对分词结果来查倒排
         List<List<Weight>> termResult = new ArrayList<>();
@@ -75,8 +90,16 @@ public class DocSearcher {
             }
             termResult.add(invertedList);
         }
+        long part3=System.currentTimeMillis();
+        log.info("查倒排操作耗时："+(part3-part2));
+
+
         // 3. [合并] 针对多个分词结果触发出的相同文档, 进行权重合并
         List<Weight> allTermResult = mergeResult(termResult);
+        long part4=System.currentTimeMillis();
+        log.info("权重合并操作耗时："+(part4-part3));
+
+
         // 4. [排序] 针对触发的结果按照权重降序排序
         allTermResult.sort(new Comparator<Weight>() {
             @Override
@@ -86,6 +109,9 @@ public class DocSearcher {
                 return o2.getWeight() - o1.getWeight();
             }
         });
+        long part5=System.currentTimeMillis();
+        log.info("权重排序操作耗时："+(part5-part4));
+
         // 5. [包装结果] 针对排序的结果, 去查正排, 构造出要返回的数据.
         List<Result> results = new ArrayList<>();
         for (Weight weight : allTermResult) {
@@ -96,6 +122,9 @@ public class DocSearcher {
             result.setDesc(GenDesc(docInfo.getContent(), terms));
             results.add(result);
         }
+        long part6=System.currentTimeMillis();
+        log.info("查正排，包装结果操作耗时："+(part6-part5));
+
         return results;
     }
 
@@ -177,6 +206,7 @@ public class DocSearcher {
 
     // 提取文章摘要
     private String GenDesc(String content, List<Term> terms) {
+
         // 先遍历分词结果, 看看哪个结果是在 content 中存在.
         int firstPos = -1;
         for (Term term : terms) {
@@ -185,13 +215,14 @@ public class DocSearcher {
             String word = term.getName();
             // 此处需要的是 "全字匹配", 让 word 能够独立成词, 才要查找出来, 而不是只作为词的一部分.
             // 此处的全字匹配的实现并不算特别严谨. 更严谨的做法, 可以使用正则表达式.
-            content = content.toLowerCase().replaceAll("\\b" + word + "\\b", " " + word + " ");
+            content = content.toLowerCase().replaceAll("\\bword\\b", " word ");
             firstPos = content.indexOf(" " + word + " ");
             if (firstPos >= 0) {
                 // 找到了位置
                 break;
             }
         }
+
         // 后面还需要用到这个 firstPos
         if (firstPos == -1) {
             // 所有的分词结果都不在正文中存在.
@@ -211,7 +242,6 @@ public class DocSearcher {
         } else {
             desc = content.substring(descBeg, descBeg + 160) + "...";
         }
-
         // 在此处加上一个替换操作. 把描述中的和分词结果相同的部分, 给加上一层 <i> 标签. 就可以通过 replace 的方式来实现.
         for (Term term : terms) {
             String word = term.getName();
