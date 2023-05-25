@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统主页</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/category_mange.css">
+    <script src="js/jquery.min.js"></script>
+    <script src="js/tools.js"></script>
+</head>
+
+<body>
+<!-- 导航栏 -->
+<div class="nav">
+    <img src="img/logo.jpg" alt="">
+    <span class="title">影视助手</span>
+    <!-- 用来占据中间位置 -->
+    <span class="spacer"></span>
+    <div class="dropdown">
+        <span>影片管理</span>
+        <div class="dropdown-menu">
+            <a href="movie_list.html">影片展示</a>
+            <a href="upload_movie.html">电影上传</a>
+            <a href="category_manage.html">类别管理</a>
+        </div>
+    </div>
+    <div class="dropdown">
+        <span>新闻管理</span>
+        <div class="dropdown-menu">
+            <a href="news_list.html">新闻浏览</a>
+            <a href="news_publish.html">新闻发布</a>
+        </div>
+    </div>
+    <a href="javascript:onExit()">注销</a>
+</div>
+
+<!-- 版心 -->
+<div class="container">
+
+</div>
+</body>
+
+<script>
+    var count=1;
+    function init() {
+        jQuery.ajax({
+            url:"/type/list",
+            type:"GET",
+            data:{},
+            success:function (result) {
+                if(result.code==200 && result.data!=null && result.data.length>0){
+                    // 循环拼接数据到 document
+                    var finalHtml="<table>\n" +
+                        "        <thead>\n" +
+                        "        <tr>\n" +
+                        "            <th>编号</th>\n" +
+                        "            <th>电影类别</th>\n" +
+                        "            <th>操作</th>\n" +
+                        "        </tr>\n" +
+                        "        </thead>\n" +
+                        "        <tbody>";
+                    for(var i=0;i<result.data.length;i++){
+                        var item = result.data[i];
+                        finalHtml+='<tr>';
+                        finalHtml+='<td>'+count+'</td>';
+                        finalHtml+='<td>'+item.type+'</td>';
+                        finalHtml+='<td><button class="edit-btn" data-id="'+item.id+'">编辑</button>';
+                        finalHtml+='<button class="delete-btn" data-id="'+item.id+'">删除</button></td>';
+                        finalHtml+='</tr>';
+                        count++;
+                    }
+
+                    // 添加增加按钮
+                    finalHtml+='<tr>';
+                    finalHtml+='<td></td>';
+                    finalHtml+='<td><input type="text" id="new-type" placeholder="请输入新的电影类别" style="width: 70%; padding: 5px;"></td>';
+                    finalHtml+='<td><button class="add-btn">添加</button></td>';
+                    finalHtml+='</tr>';
+
+                    finalHtml+='</tbody>';
+                    finalHtml+='</table>';
+                    jQuery(".container").html(finalHtml);
+
+
+                    // 添加增加按钮事件处理程序
+                    jQuery('.add-btn').on('click', function(){
+                        var newType = jQuery('#new-type').val();
+                        if(newType){
+                            jQuery.ajax({
+                                url: '/type/add',
+                                type: 'POST',
+                                data: {
+                                    "type": newType
+                                },
+                                success: function(result){
+                                    // 处理添加操作成功后的逻辑
+                                    if(result.code == 200){
+                                        // 提示用户操作成功，刷新页面
+                                        alert('添加成功！');
+                                        count++;
+                                        location.reload();
+                                    }else{
+                                        // 提示用户操作失败
+                                        alert('添加失败，请重试！');
+                                    }
+                                },
+                                error: function(){
+                                    // 处理添加操作失败后的逻辑
+                                    alert('添加失败，请重试！');
+                                }
+                            });
+                        }else{
+                            // 提示用户输入不能为空
+                            alert('请输入电影类别！');
+                        }
+                    });
+
+                    // 添加编辑按钮事件处理程序
+                    jQuery('.edit-btn').on('click', function(){
+                        var id = jQuery(this).data('id');
+                        // 根据id执行编辑操作
+                        // 例如，可以弹出一个模态框，让用户输入新的电影类别，并将修改后的数据提交到服务器
+                        var newType = prompt('请输入新的电影类别：');
+                        if(newType){
+                            jQuery.ajax({
+                                url: '/type/update',
+                                type: 'POST',
+                                data: {
+                                    "tid": id,
+                                    "type": newType
+                                },
+                                success: function(result){
+                                    // 处理编辑操作成功后的逻辑
+                                    if(result.code == 200){
+                                        // 提示用户操作成功，刷新页面
+                                        alert('编辑成功！');
+                                        location.reload();
+                                    }else{
+                                        // 提示用户操作失败
+                                        alert('编辑失败，请重试！');
+                                    }
+                                },
+                                error: function(){
+                                    // 处理编辑操作失败后的逻辑
+                                    alert('编辑失败，请重试！');
+                                }
+                            });
+                        }
+                    });
+
+                    // 添加删除按钮事件处理程序
+                    jQuery('.delete-btn').on('click', function(){
+                        var id = jQuery(this).data('id');
+                        // 根据id执行删除操作
+                        // 例如，可以弹出一个确认框，让用户确认是否删除该电影类别
+                        if(confirm('确认删除该电影类别吗？')){
+                            jQuery.ajax({
+                                url: '/type/delete',
+                                type: 'POST',
+                                data: {
+                                    "tid": id
+                                },
+                                success: function(result){
+                                    // 处理删除操作成功后的逻辑
+                                    if(result.code == 200){
+                                        // 提示用户操作成功，刷新页面
+                                        alert('删除成功！');
+                                        count--;
+                                        location.reload();
+                                    }else{
+                                        // 提示用户操作失败
+                                        alert('删除失败，请重试！');
+                                    }
+                                },
+                                error: function(){
+                                    // 处理删除操作失败后的逻辑
+                                    alert('删除失败，请重试！');
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+        });
+    }
+    init();
+</script>
+</html>

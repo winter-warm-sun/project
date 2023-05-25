@@ -1,0 +1,36 @@
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+table th,
+table td {
+    padding: 10px;
+    text-align: left;
+    border: 2px solid #ddd;
+}
+
+table th {
+    background-color: #f2f2f2;
+    color: #555;
+}
+
+table button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 5px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+table button:hover {
+    background-color: #2980b9;
+}
+
+table tbody tr:nth-child(even) {
+    background-color: #f9f9f9; /* 将奇数行背景颜色改为浅白色 */
+}
+

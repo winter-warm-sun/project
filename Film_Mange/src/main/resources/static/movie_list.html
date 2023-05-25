@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统主页</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/movie_list.css">
+    <script src="js/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="js/tools.js"></script>
+</head>
+
+<body>
+<!-- 导航栏 -->
+<div class="nav">
+    <img src="img/logo.jpg" alt="">
+    <span class="title">影视助手</span>
+    <!-- 用来占据中间位置 -->
+    <span class="spacer"></span>
+    <div class="dropdown">
+        <span>影片管理</span>
+        <div class="dropdown-menu">
+            <a href="movie_list.html">影片展示</a>
+            <a href="upload_movie.html">电影上传</a>
+            <a href="category_manage.html">类别管理</a>
+        </div>
+    </div>
+    <div class="dropdown">
+        <span>新闻管理</span>
+        <div class="dropdown-menu">
+            <a href="news_list.html">新闻浏览</a>
+            <a href="news_publish.html">新闻发布</a>
+        </div>
+    </div>
+    <a href="javascript:onExit()">注销</a>
+</div>
+
+<div class="container">
+    <h1>影片列表</h1>
+    <table>
+        <thead>
+        <tr>
+            <th>名称</th>
+            <th>导演</th>
+            <th>类型</th>
+            <th>描述</th>
+            <th>海报</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+
+        <tbody id="movie-table">
+        <!-- 影片列表将在这里动态生成 -->
+        </tbody>
+
+    </table>
+
+</div>
+</body>
+
+<script>
+    function loadMovies() {
+        jQuery.ajax({
+            url: "/film/list",
+            type: "GET",
+            data: {},
+            success: function(result) {
+                if (result.code == 200 && result.data != null && result.data.length > 0) {
+                    var finalHtml = "";
+                    for (var i = 0; i < result.data.length; i++) {
+                        var movie = result.data[i];
+                        // Build HTML for movie row
+                        var html = "<tr>" +
+                            "<td>" + movie.name + "</td>" +
+                            "<td>" + movie.director + "</td>" +
+                            "<td>" + movie.type + "</td>" +
+                            "<td>" + movie.description + "</td>" +
+                            "<td><img src='" +movie.posterPath+ " ' class='movie-poster'></td>" +
+                            "<td>" +
+                            "<button class='play-movie' data-movie-path='" + movie.videoPath + "'>播放</button>" +
+                            "<button class='edit-movie' data-movie-id='" + movie.id + "'>编辑</button>" +
+                            "<button class='delete-movie' data-movie-id='" + movie.id + "'>删除</button>" +
+                            "</td>" +
+                            "</tr>";
+                        finalHtml += html;
+                    }
+                    jQuery("#movie-table").html(finalHtml);
+
+                    jQuery(document).ready(function() {
+                        jQuery("body").on("click", ".play-movie", function() {
+                            var videoPath = jQuery(this).data("movie-path");
+                            // 打开新页面并播放视频
+                            var playerWindow = window.open("", "movie-player");
+                            playerWindow.document.write("<video id='movie-player' src='" + videoPath + "' controls='false'></video>");
+                            // Add CSS to center the video
+                            playerWindow.document.write("<style> video { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); } </style>");
+                            var player = playerWindow.document.getElementById("movie-player");
+                            // 添加全屏按钮
+                            var fullscreenButton = playerWindow.document.createElement("button");
+                            fullscreenButton.innerHTML = "全屏";
+                            playerWindow.document.body.appendChild(fullscreenButton);
+                            // 添加事件处理器
+                            fullscreenButton.addEventListener("click", function() {
+                                if (player.requestFullscreen) {
+                                    player.requestFullscreen();
+                                } else if (player.webkitRequestFullscreen) {
+                                    player.webkitRequestFullscreen();
+                                } else if (player.msRequestFullscreen) {
+                                    player.msRequestFullscreen();
+                                }
+                            });
+                            // 将视频全屏
+                            player.addEventListener("loadedmetadata", function() {
+                                player.play();
+                                player.requestFullscreen();
+                            });
+                        });
+                    });
+
+                    // 绑定编辑按钮的点击事件处理器
+                    jQuery(document).ready(function() {
+                        jQuery("body").on("click", ".edit-movie", function() {
+                            var movieId = jQuery(this).data("movie-id");
+                            // 弹出模态框
+                            var newType = prompt('请输入新的电影类别：');
+                            var newDescription = prompt('请输入新的电影描述：');
+                            if (newType != null && newDescription != null) {
+                                // 发送请求到后端进行更新
+                                jQuery.ajax({
+                                    url: "/film/update",
+                                    type: "POST",
+                                    data: {
+                                        fid: movieId,
+                                        type: newType,
+                                        description: newDescription
+                                    },
+                                    success: function(result) {
+                                        if (result.code == 200) {
+                                            // 更新成功，提示用户操作成功，刷新页面
+                                            alert('编辑成功！');
+                                            location.reload();
+                                        } else {
+                                            // 处理更新失败的情况
+                                            alert('编辑失败，请重试！');
+                                        }
+                                    },
+                                    error: function() {
+                                        // 处理请求失败的情况
+                                        alert('编辑失败，请重试！');
+                                    }
+                                });
+                            }
+                        });
+                    });
+
+
+                    // 绑定删除按钮的点击事件处理器
+                    jQuery(document).ready(function() {
+                        jQuery("body").on("click", ".delete-movie", function() {
+                            var movieId = jQuery(this).data("movie-id");
+                            // 弹出确认框
+                            if (confirm('确认删除该电影吗？')) {
+                                // 发送请求到后端进行删除
+                                jQuery.ajax({
+                                    url: "/film/delete",
+                                    type: "POST",
+                                    data: {
+                                        fid: movieId
+                                    },
+                                    success: function(result) {
+                                        if (result.code == 200) {
+                                            // 删除成功，提示用户操作成功，刷新页面
+                                            alert('删除成功！');
+                                            location.reload();
+                                        } else {
+                                            // 处理删除失败的情况
+                                            alert('删除失败，请重试！');
+                                        }
+                                    },
+                                    error: function() {
+                                        // 处理请求失败的情况
+                                        alert('删除失败，请重试！');
+                                    }
+                                });
+                            }
+                        });
+                    });
+
+                } else {
+                    // handle error or empty result
+                }
+            },
+            error: function() {
+                // handle error
+            }
+        });
+    }
+
+    loadMovies();
+
+</script>
+</html>

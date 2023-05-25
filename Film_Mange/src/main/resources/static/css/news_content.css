@@ -1,0 +1,23 @@
+/* 博客正文容器 */
+.news-content {
+    padding: 30px;
+}
+
+/* 博客标题 */
+.news-content h3 {
+    text-align: center;
+    padding: 20px 0;
+}
+
+/* 博客日期 */
+.news-content .date {
+    color: #008000;
+    padding: 10px 0;
+    text-align: center;
+}
+
+/* 博客内容段落 */
+.news-content p {
+    text-indent: 2em;
+    padding: 10px 0;
+}

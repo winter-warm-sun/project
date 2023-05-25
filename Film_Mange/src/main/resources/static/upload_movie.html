@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电影上传</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/upload_movie.css">
+    <script src="js/jquery.min.js"></script>
+    <script src="js/tools.js"></script>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js"></script>
+</head>
+</head>
+
+<body>
+<!-- 导航栏 -->
+<div class="nav">
+    <img src="img/logo.jpg" alt="">
+    <span class="title">影视助手</span>
+    <!-- 用来占据中间位置 -->
+    <span class="spacer"></span>
+    <div class="dropdown">
+        <span>影片管理</span>
+        <div class="dropdown-menu">
+            <a href="movie_list.html">影片展示</a>
+            <a href="upload_movie.html">电影上传</a>
+            <a href="category_manage.html">类别管理</a>
+        </div>
+    </div>
+    <div class="dropdown">
+        <span>新闻管理</span>
+        <div class="dropdown-menu">
+            <a href="news_list.html">新闻浏览</a>
+            <a href="news_publish.html">新闻发布</a>
+        </div>
+    </div>
+    <a href="javascript:onExit()">注销</a>
+</div>
+
+<!-- 版心 -->
+<div class="container">
+    <h1>电影上传</h1>
+    <form id="movie-form" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="movie-name">电影名</label>
+            <input type="text" class="form-control" id="movie-name" name="name" required>
+        </div>
+        <div class="form-group">
+            <label for="movie-director">导演</label>
+            <input type="text" class="form-control" id="movie-director" name="director" required>
+        </div>
+        <div class="form-group">
+            <label for="movie-type">电影类型</label>
+            <select class="form-control" id="movie-type" name="type" required>
+                <option value="动作">动作</option>
+                <option value="剧情">剧情</option>
+                <option value="喜剧">喜剧</option>
+                <option value="爱情">爱情</option>
+                <option value="科幻">科幻</option>
+                <option value="恐怖">恐怖</option>
+                <option value="动画">动画</option>
+                <option value="纪录片">纪录片</option>
+                <option value="其他">其他</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="movie-description">电影描述</label>
+            <textarea class="form-control" id="movie-description" name="description" rows="3" required></textarea>
+        </div>
+        <div class="form-group form-group-image">
+            <label for="movie-image">电影图片</label>
+            <div class="form-control-file">
+                <input type="file" class="form-control-file-input" id="movie-image" name="image" accept="image/*" onchange="uploadFile(this)">
+                <span>请选择电影图片</span>
+            </div>
+        </div>
+        <div class="form-group form-group-video">
+            <label for="movie-video">电影视频</label>
+            <div class="form-control-file">
+                <input type="file" class="form-control-file-input" id="movie-video" name="video" accept="video/*" onchange="uploadFile(this)">
+                <span>请选择电影视频</span>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">上传</button>
+
+    </form>
+    <script>
+        $(function () {
+            $('#movie-form').submit(function (event) {
+                event.preventDefault();
+                var formData = new FormData(this);
+                $.ajax({
+                    url: '/film/upload',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (result) {
+                        if(result.code==200&&result.data>0) {
+                            alert('上传成功！');
+                            location.href="movie_list.html";
+                        }else {
+                            alert("上传失败！");
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        alert('上传失败：' + error);
+                    }
+                });
+            });
+        });
+
+        var uploadedIcon = '<i class="fas fa-check-circle" style="color:green"></i>';
+
+        function uploadFile(input) {
+            var file = input.files[0];
+
+            // 上传文件的代码
+
+            // 上传成功后添加提示文本和图标
+            var span = input.parentNode.querySelector('span');
+            span.innerText = "已上传";
+            span.insertAdjacentHTML('beforeend', uploadedIcon);
+        }
+
+        function populateMovieTypes() {
+            // 发送GET请求获取电影类型列表
+            fetch('/type/list')
+                .then(response => response.json())
+                .then(data => {
+                    // 清空选项列表
+                    const select = document.getElementById('movie-type');
+                    select.innerHTML = '';
+
+                    // 将电影类型添加到选项列表
+                    data.data.forEach(type => {
+                        const option = document.createElement('option');
+                        option.value = type.type;
+                        option.text = type.type;
+                        select.appendChild(option);
+                    });
+                })
+                .catch(error => console.error(error));
+        }
+
+        // 在页面加载时调用该函数
+        window.addEventListener('load', populateMovieTypes);
+    </script>
+</div>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace 要设置是实现接口的具体包名加接口名 -->
+<mapper namespace="com.example.demo.mapper.NewsMapper">
+    <insert id="add">
+        insert into newsinfo(title,releasetime,content) values
+        (#{title},now(),#{content})
+    </insert>
+    <update id="update">
+        update newsinfo set title=#{title},content=#{content}
+        where id=#{nid}
+    </update>
+    <delete id="delete">
+        delete from newsinfo where id=#{nid}
+    </delete>
+
+    <select id="getList" resultType="com.example.demo.model.NewsInfo">
+        select * from newsinfo;
+    </select>
+
+    <select id="getDetail" resultType="com.example.demo.model.NewsInfo">
+        select * from newsinfo where id=#{nid}
+    </select>
+</mapper>
